@@ -223,3 +223,14 @@ __marimo__/
 *.sql
 *.db
 users.json
+# macOS
+.DS_Store
+**/.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Entornos virtuales
+.venv/
+venv/
