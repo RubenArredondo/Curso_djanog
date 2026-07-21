@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16
+    container_name: crm-postgres
+    environment:
+      POSTGRES_USER: toris
+      POSTGRES_PASSWORD: crm2026
+      POSTGRES_DB: crm_leads
+    ports:
+      - "5433:5432"
+    volumes:
+      - crm_datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U toris -d crm_leads"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: crm-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: crm_leads
+      DB_USER: toris
+      DB_PASSWORD: crm2026
+    stdin_open: true
+    tty: true
+
+volumes:
+  crm_datos:
