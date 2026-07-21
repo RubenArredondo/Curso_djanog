@@ -1,6 +1,6 @@
 from core_engine.database import obtener_conexion
-from core_engine.models import Lead, EstadoLead
-from core_engine.repositories import LeadRepository, BitacoraRepository
+from core_engine.models import Lead, Vendedor, EstadoLead
+from core_engine.repositories import LeadRepository, BitacoraRepository, VendedorRepository
 from core_engine.services import PipelineService
 from core_engine.exceptions import EstadoInvalidoError
 
@@ -8,21 +8,24 @@ from core_engine.exceptions import EstadoInvalidoError
 def mostrar_menu():
     print("\n===== CRM DE LEADS =====")
     print("1. Registrar nuevo lead")
-    print("2. Mostrar Leads")
-    print("3. Avanzar lead de estado")
-    print("4. Buscar leads")
-    print("5. Ver bitacora de un lead")
-    print("6. Salir")
+    print("2. Registrar nuevo vendedor")
+    print("3. Mostrar Leads")
+    print("4. Mostrar Vendedores")
+    print("5. Avanzar lead de estado")
+    print("6. Buscar leads")
+    print("7. Ver bitacora")
+    print("8. Buscar vendedor")
+    print("9. Salir")
 
 
-def registrar_lead(repo, conexion):
+def registrar_lead(repo_lead, conexion):
     nombre = input("Nombre: ")
     apellido = input("Apellido: ")
     correo = input("Correo: ")
     presupuesto = float(input("Presupuesto estimado: "))
 
     lead = Lead(nombre, apellido, correo, presupuesto)
-    nuevo_id = repo.guardar_lead(lead)
+    nuevo_id = repo_lead.guardar_lead(lead)
     conexion.commit()
     print(f"Lead registrado con id {nuevo_id}")
 
@@ -31,7 +34,7 @@ def avanzar_lead(servicio):
     lead_id = int(input("Id del lead: "))
     print("Estados disponibles:")
     for estado in EstadoLead:
-        print(f"   - {estado.value}")
+        print(f"{estado.value}")
     texto = input("Nuevo estado: ")
     notas = input("Notas") or None
 
@@ -57,17 +60,47 @@ def imprimir_leads(resultados):
         print(f"   id={lead.id} | {lead.get_fullname()} | {lead.estado_actual.value} | {lead.prioridad}")
 
 
-def mostrar_leads(repo):
-    resultados = repo.buscar_leads()
+def mostrar_leads(repo_lead):
+    resultados = repo_lead.buscar_leads()
     imprimir_leads(resultados)
 
-def buscar_leads(repo):
+def buscar_leads(repo_lead):
     estado = input("Filtrar por estado enter para omitir: ") or None
     prioridad = input("Filtrar por prioridad enter para omitir ") or None
 
-    resultados = repo.buscar_leads(estado=estado, prioridad=prioridad)
+    resultados = repo_lead.buscar_leads(estado=estado, prioridad=prioridad)
     imprimir_leads(resultados)
 
+def registrar_vendedor(repo_vendedor, conexion):
+    nombre = input("Ingrese el nombre: ")
+    n_empleado = input("Ingrese el numero de vendedor (Ejemplo V-78): ")
+    vendedor = Vendedor(n_empleado, nombre)
+    nuevo_id = repo_vendedor.guardar_vendedor(vendedor)
+    conexion.commit()
+    print(f"Vendedor registrado con id {nuevo_id}")
+
+def imprimir_vendedor(resultados):
+    if not resultados:
+        print("No se encontraron vendedores")
+        return
+    for vendedor in resultados:
+        print(f"   id={vendedor.id} | {vendedor.nombre} | {vendedor.n_empleado}")
+
+
+def buscar_vendedor(repo_vendedor):
+    id_vendedor = int(input("Ingrese el id del vendedor:"))
+    vendedor = repo_vendedor.obtener_por_id(id_vendedor)
+    if vendedor is None:
+        print("No existe vendedor")
+        return
+    imprimir_vendedor([vendedor])
+
+def mostrar_vendedores(repo_vendedor):
+    resultados = repo_vendedor.listar_todos()
+    if resultados == []:
+        print(f"No hay vendedores registrados")
+        return
+    imprimir_vendedor(resultados)
 
 def ver_bitacora(repo_bitacora):
     lead_id = int(input("Id del lead: "))
@@ -83,7 +116,9 @@ def main():
     conexion = obtener_conexion()
     repo_leads = LeadRepository(conexion)
     repo_bitacora = BitacoraRepository(conexion)
+    repo_vendedor = VendedorRepository(conexion)
     servicio = PipelineService(conexion)
+
 
     while True:
         mostrar_menu()
@@ -92,14 +127,20 @@ def main():
         if opcion == "1":
             registrar_lead(repo_leads, conexion)
         elif opcion == "2":
-            mostrar_leads(repo_leads)
+            registrar_vendedor(repo_vendedor, conexion)
         elif opcion == "3":
-            avanzar_lead(servicio)
+            mostrar_leads(repo_leads)
         elif opcion == "4":
-            buscar_leads(repo_leads)
+            mostrar_vendedores(repo_vendedor)
         elif opcion == "5":
-            ver_bitacora(repo_bitacora)
+            avanzar_lead(servicio)
         elif opcion == "6":
+            buscar_leads(repo_leads)
+        elif opcion == "7":
+            ver_bitacora(repo_bitacora)
+        elif opcion == "8":
+            buscar_vendedor(repo_vendedor)
+        elif opcion == "9":
             print("Cerrando Programa")
             break
         else:
