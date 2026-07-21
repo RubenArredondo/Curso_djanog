@@ -72,10 +72,12 @@ class Vendedor(Persona):
 
 class Bitacora:
     def __init__(self, lead_id, vendedor_id, estado_anterior, estado_nuevo, notas) -> None:
+        self.id = None
         self.lead_id = lead_id
         self.vendedor_id = vendedor_id
         self.estado_anterior = estado_anterior
         self.estado_nuevo = estado_nuevo
+        self.fecha_evento = None
         self.notas = notas
 
     def __str__(self) -> str:
