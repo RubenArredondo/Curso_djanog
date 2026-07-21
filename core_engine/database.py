@@ -55,7 +55,7 @@ def inicializar_db():
 
     conexion.commit()
     conexion.close()
-    
+
     print("Base datos inicializad")
 if __name__ == "__main__":
     inicializar_db()
