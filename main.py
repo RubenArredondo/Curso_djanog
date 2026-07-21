@@ -8,10 +8,11 @@ from core_engine.exceptions import EstadoInvalidoError
 def mostrar_menu():
     print("\n===== CRM DE LEADS =====")
     print("1. Registrar nuevo lead")
-    print("2. Avanzar lead de estado")
-    print("3. Buscar leads")
-    print("4. Ver bitacora de un lead")
-    print("0. Salir")
+    print("2. Mostrar Leads")
+    print("3. Avanzar lead de estado")
+    print("4. Buscar leads")
+    print("5. Ver bitacora de un lead")
+    print("6. Salir")
 
 
 def registrar_lead(repo, conexion):
@@ -48,17 +49,24 @@ def avanzar_lead(servicio):
     except ValueError as error:
         print(error)
 
+def imprimir_leads(resultados):
+    if not resultados:
+        print("No se encontraron leads")
+        return
+    for lead in resultados:
+        print(f"   id={lead.id} | {lead.get_fullname()} | {lead.estado_actual.value} | {lead.prioridad}")
+
+
+def mostrar_leads(repo):
+    resultados = repo.buscar_leads()
+    imprimir_leads(resultados)
 
 def buscar_leads(repo):
     estado = input("Filtrar por estado enter para omitir: ") or None
     prioridad = input("Filtrar por prioridad enter para omitir ") or None
 
     resultados = repo.buscar_leads(estado=estado, prioridad=prioridad)
-    if not resultados:
-        print("No se encontraron leads")
-        return
-    for lead in resultados:
-        print(f"   id={lead.id} | {lead.get_fullname()} | {lead.estado_actual.value} | {lead.prioridad}")
+    imprimir_leads(resultados)
 
 
 def ver_bitacora(repo_bitacora):
@@ -84,12 +92,14 @@ def main():
         if opcion == "1":
             registrar_lead(repo_leads, conexion)
         elif opcion == "2":
-            avanzar_lead(servicio)
+            mostrar_leads(repo_leads)
         elif opcion == "3":
-            buscar_leads(repo_leads)
+            avanzar_lead(servicio)
         elif opcion == "4":
+            buscar_leads(repo_leads)
+        elif opcion == "5":
             ver_bitacora(repo_bitacora)
-        elif opcion == "0":
+        elif opcion == "6":
             print("Cerrando Programa")
             break
         else:
