@@ -27,6 +27,7 @@ class Lead(Persona):
     def __init__(self, nombre, apellido, correo, presupuesto_estimado) -> None:
         super().__init__(nombre, apellido, correo)
         self.id = None
+        self.vendedor_id = None
         self.presupuesto = presupuesto_estimado
         self.estado_actual = EstadoLead.NUEVO
         self.prioridad = self.es_prioridad()

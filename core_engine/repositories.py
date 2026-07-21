@@ -41,6 +41,40 @@ class LeadRepository:
         cursor = self.conexion.cursor()
         cursor.execute("UPDATE leads SET estado_actual =%s, fecha_actualizacion= NOW() WHERE id_lead= %s", (estado_nuevo.value, lead_id),)
 
+    def buscar_leads(self, estado=None, vendedor_id=None, prioridad=None):
+        query = "SELECT id_lead, nombre, apellido, correo, presupuesto, estado_actual, es_corporativo, fecha_actualizacion, prioridad, vendedor_id FROM leads"
+        condiciones = []
+        valores = []
+        if estado is not None:
+            condiciones.append("estado_actual =%s")
+            valores.append(estado)
+        if vendedor_id is not None:
+            condiciones.append("vendedor_id =%s")
+            valores.append(vendedor_id)
+        if prioridad is not None:
+            condiciones.append("prioridad =%s")
+            valores.append(prioridad)
+
+        if condiciones:
+            query += " WHERE " + " AND ".join(condiciones)
+
+        query += " ORDER BY id_lead"
+
+        cursor = self.conexion.cursor()
+        cursor.execute(query, tuple(valores))
+        filas = cursor.fetchall()
+
+        leads = []
+
+        for fila in filas:
+            lead = Lead(fila[1], fila[2], fila[3], fila[4])
+            lead.id = fila[0]
+            lead.estado_actual = EstadoLead(fila[5])
+            lead.prioridad = fila[8]
+            lead.vendedor_id = fila[9]
+            leads.append(lead)
+
+        return leads
 class BitacoraRepository:
     def __init__(self, conexion) -> None:
         self.conexion = conexion
