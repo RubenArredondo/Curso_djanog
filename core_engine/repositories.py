@@ -1,4 +1,4 @@
-from core_engine.models import Lead, EstadoLead, Bitacora
+from core_engine.models import Lead, Vendedor, EstadoLead, Bitacora
 
 class LeadRepository:
     def __init__(self, conexion) -> None:
@@ -112,6 +112,51 @@ class BitacoraRepository:
             actualizacion.fecha_evento = fila[6]
             registros.append(actualizacion)
         return registros
+
+class VendedorRepository:
+    def __init__(self, conexion) -> None:
+        self.conexion = conexion
+
+    def guardar_vendedor(self, vendedor: Vendedor):
+        cursor = self.conexion.cursor()
+        cursor.execute("""
+            INSERT INTO vendedores (n_empleado, nombre) VALUES (%s,%s) RETURNING id_vendedor""",
+            (
+                vendedor.n_empleado,
+                vendedor.nombre
+            ),
+        )
+        resultado = cursor.fetchone()
+        if resultado is None:
+            raise RuntimeError("No se pudo obtener el id del vendedor")
+        nuevo_id = resultado[0]
+        return nuevo_id
+
+    def obtener_por_id(self, vendedor_id):
+        cursor = self.conexion.cursor()
+        cursor.execute("""
+            SELECT n_empleado, nombre FROM vendedores WHERE id_vendedor = %s
+        """,(vendedor_id,),
+        )
+        fila = cursor.fetchone()
+        if fila is None:
+            return None
+        vendedor = Vendedor(fila[0], fila[1])
+        vendedor.id = vendedor_id
+        return vendedor
+
+    def listar_todos(self):
+        cursor = self.conexion.cursor()
+        cursor.execute("""
+            SELECT id_vendedor, n_empleado, nombre FROM vendedores ORDER BY id_vendedor
+        """)
+        filas = cursor.fetchall()
+        vendedores = []
+        for fila in filas:
+            vendedor = Vendedor(fila[1], fila[2])
+            vendedor.id = fila[0]
+            vendedores.append(vendedor)
+        return vendedores
 
 
 

@@ -64,12 +64,13 @@ class Lead(Persona):
 
 
 class Vendedor(Persona):
-    def __init__(self, nombre, apellido,correo, n_empleado) -> None:
+    def __init__(self, n_empleado, nombre, apellido="",correo="") -> None:
         super().__init__(nombre, apellido, correo)
+        self.id = None
         self.n_empleado = n_empleado
 
     def __str__(self) -> str:
-        return f"Nombre: {self.get_fullname(), self.n_empleado}"
+        return f"Nombre: {self.get_fullname()}, Numero de empleado: {self.n_empleado}"
 
 class Bitacora:
     def __init__(self, lead_id, vendedor_id, estado_anterior, estado_nuevo, notas) -> None:
