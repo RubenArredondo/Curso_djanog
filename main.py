@@ -12,10 +12,11 @@ def mostrar_menu():
     print("3. Mostrar Leads")
     print("4. Mostrar Vendedores")
     print("5. Avanzar lead de estado")
-    print("6. Buscar leads")
-    print("7. Ver bitacora")
-    print("8. Buscar vendedor")
-    print("9. Salir")
+    print("6. Asignar vendedor")
+    print("7. Buscar leads")
+    print("8. Ver bitacora")
+    print("9. Buscar vendedor")
+    print("10. Salir")
 
 
 def registrar_lead(repo_lead, conexion):
@@ -67,8 +68,10 @@ def mostrar_leads(repo_lead):
 def buscar_leads(repo_lead):
     estado = input("Filtrar por estado enter para omitir: ") or None
     prioridad = input("Filtrar por prioridad enter para omitir ") or None
-
-    resultados = repo_lead.buscar_leads(estado=estado, prioridad=prioridad)
+    vendedor_id = input("Filtrar por id del vendedor enter para omitir ") or None
+    if vendedor_id is not None:
+        vendedor_id = int(vendedor_id)
+    resultados = repo_lead.buscar_leads(estado=estado, prioridad=prioridad, vendedor_id= vendedor_id)
     imprimir_leads(resultados)
 
 def registrar_vendedor(repo_vendedor, conexion):
@@ -101,6 +104,16 @@ def mostrar_vendedores(repo_vendedor):
         print(f"No hay vendedores registrados")
         return
     imprimir_vendedor(resultados)
+
+def asignar_vendedor(servicio):
+    id_lead = int(input("ID del Lead: "))
+    id_vendedor = int(input("ID del Vendedor: "))
+    notas = input("Tiene alguna nota?(Opciona): ") or None
+    try:
+        servicio.asignar_vendedor(id_lead,id_vendedor,notas)
+        print("Vendedor asignado correctamente")
+    except ValueError as e:
+        print(e)
 
 def ver_bitacora(repo_bitacora):
     lead_id = int(input("Id del lead: "))
@@ -135,12 +148,14 @@ def main():
         elif opcion == "5":
             avanzar_lead(servicio)
         elif opcion == "6":
-            buscar_leads(repo_leads)
+            asignar_vendedor(servicio)
         elif opcion == "7":
-            ver_bitacora(repo_bitacora)
+            buscar_leads(repo_leads)
         elif opcion == "8":
-            buscar_vendedor(repo_vendedor)
+            ver_bitacora(repo_bitacora)
         elif opcion == "9":
+            buscar_vendedor(repo_vendedor)
+        elif opcion == "10":
             print("Cerrando Programa")
             break
         else:
