@@ -41,6 +41,13 @@ class LeadRepository:
         cursor = self.conexion.cursor()
         cursor.execute("UPDATE leads SET estado_actual =%s, fecha_actualizacion= NOW() WHERE id_lead= %s", (estado_nuevo.value, lead_id),)
 
+
+    def asignar_vendedor(self, lead_id, vendedor_id):
+        cursor = self.conexion.cursor()
+        cursor.execute("""
+            UPDATE leads SET vendedor_id = %s, fecha_actualizacion = NOW() WHERE id_lead = %s
+        """, (vendedor_id, lead_id))
+
     def buscar_leads(self, estado=None, vendedor_id=None, prioridad=None):
         query = "SELECT id_lead, nombre, apellido, correo, presupuesto, estado_actual, es_corporativo, fecha_actualizacion, prioridad, vendedor_id FROM leads"
         condiciones = []
@@ -157,6 +164,7 @@ class VendedorRepository:
             vendedor.id = fila[0]
             vendedores.append(vendedor)
         return vendedores
+
 
 
 

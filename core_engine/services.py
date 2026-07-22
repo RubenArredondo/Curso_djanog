@@ -1,6 +1,6 @@
 from core_engine.models import EstadoLead, TRANSICIONES, Bitacora
 from core_engine.exceptions import EstadoInvalidoError
-from core_engine.repositories import LeadRepository, BitacoraRepository
+from core_engine.repositories import LeadRepository, BitacoraRepository, VendedorRepository
 
 def validar_transicion(estado_actual, nuevo_estado):
     destinos = TRANSICIONES[estado_actual]
@@ -21,6 +21,7 @@ class PipelineService:
         self.conexion = conexion
         self.leads = LeadRepository(conexion)
         self.bitacora= BitacoraRepository(conexion)
+        self.vendedores = VendedorRepository(conexion)
 
     def avanzar_lead(self, lead_id, nuevo_estado, vendedor_id =None, notas= None):
         lead = self.leads.obtener_por_id(lead_id)
@@ -35,6 +36,27 @@ class PipelineService:
             self.bitacora.registrar_bitacora(registro)
             self.conexion.commit()
             return lead_id
+        except Exception:
+            self.conexion.rollback()
+            raise
+
+    def asignar_vendedor(self, lead_id, vendedor_id, notas=None):
+        lead = self.leads.obtener_por_id(lead_id)
+        if lead is None:
+            raise ValueError(f"No existe el lead {lead_id}")
+
+        vendedor = self.vendedores.obtener_por_id(vendedor_id)
+        if vendedor is None:
+            raise ValueError(f"No existe el vendedor {vendedor_id}")
+
+        if notas is None:
+            notas = f"Vendedor asignado: {vendedor.nombre} ({vendedor.n_empleado})"
+
+        try:
+            self.leads.asignar_vendedor(lead_id, vendedor_id)
+            bitacora = Bitacora(lead_id, vendedor_id, lead.estado_actual.value, lead.estado_actual.value, notas)
+            self.bitacora.registrar_bitacora(bitacora)
+            self.conexion.commit()
         except Exception:
             self.conexion.rollback()
             raise

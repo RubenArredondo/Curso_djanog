@@ -1,0 +1,43 @@
+name: Proyecto-django
+
+services:
+
+  db_django:
+    image: postgres:16-aphine
+    container_name: database_django
+    restart: always
+    environment:
+      POSTGRES_DB: ${database_django}
+      POSTGRES_USER: ${database_user}
+      POSTGRES_PASSWORD: ${database_psw}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      -"5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${database_user} -d ${database_django}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile-python.dev
+    container_name: cmr_semana_2
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db_django
+      DB_PORT: 5432
+      DB_NAME: ${database_django}
+      DB_USER: ${database_user}
+      DB_PASSWORD: ${darabase_psw}
+    volumes:
+      -      - ./backend:/app
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      -"8000:8000"
+    depends_on:
+      db_django:
+        condition: service_healthy
