@@ -1,0 +1,44 @@
+services:
+
+  db:
+    image: postgres:16
+    container_name: semana2_postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  juego:
+    build: .
+    image: semana2-gremios
+    container_name: semana2_gremios
+
+    stdin_open: true
+    tty: true
+
+    env_file: .env
+
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    volumes:
+      - ./app:/app
+
+volumes:
+  postgres_data:

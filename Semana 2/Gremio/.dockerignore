@@ -1,0 +1,25 @@
+# Todo lo que aparezca aqui NO se copia a la imagen.
+# Esto la mantiene ligera y evita filtrar basura de tu maquina al contenedor.
+
+# El entorno virtual local: pesa cientos de MB y ademas tiene binarios
+# compilados para macOS que no sirven dentro de Linux.
+venv/
+.venv/
+
+# Cache de Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+
+*.db
+*.sqlite3
+
+
+.DS_Store
+.idea/
+.vscode/
+
+
+.git/
+.gitignore
